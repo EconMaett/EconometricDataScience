@@ -1,0 +1,658 @@
+#Figure 4.5 Various Linear Trend
+import numpy as np
+import matplotlib.pyplot as plt
+plt.figure(figsize=(20,8),dpi=80)
+plt.xlim(0,100)
+plt.ylim(-60,40)
+x=np.linspace(0,100,10000)
+y1=10-0.25*x
+y2=-50+0.8*x
+plt.plot(x,y1,'k-',label="Trend=10-0.25*Time")
+plt.plot(x,y2,'k--',label="Trend=-50+.8*Time")
+plt.legend(loc='upper left')
+plt.ylabel("Trend",verticalalignment='center')
+plt.xlabel("Time",horizontalalignment='center')
+plt.title('Figure 4.5 Various Linear Trend')
+plt.show()
+
+#Figure 4.6 Liquor Sales
+#read sales data
+import numpy as np
+import matplotlib.pyplot as plt
+import string 
+import pandas as pd
+import statsmodels.api as sm
+data=pd.read_csv('C:/Users/fdiebold/Dropbox/Econometrics/MasterDataAndCode_HOT/Code_Python/Python_Liquor/DataLiquor.csv')
+liquor=data['liquorsales']
+liquor.tolist()
+#plot sales trend
+fit, ax1=plt.subplots(figsize=(20,8),dpi=80)
+ax1.set_xlabel('Time')
+ax1.set_ylabel('Sales')
+ax1.plot(liquor,'b-')
+datelist=[]
+t=0
+for i in range(28):
+	t=1987+i
+	datelist=datelist+[t]
+	i+=1
+date_list =[str(x) for x in datelist]
+plt.xlim(0,360)
+plt.xticks(np.arange(4,360,13),date_list,rotation=90)  
+plt.title('Figure 4.6 Liquor Sales')
+plt.show()
+
+#Figure 4.7 Log Liquor Sales
+import numpy as np
+import matplotlib.pyplot as plt
+import string 
+import math
+log_liquor=[math.log(w) for w in liquor]
+fit, ax1=plt.subplots(figsize=(20,8),dpi=80)
+ax1.set_xlabel('Time')
+ax1.set_ylabel('Log Sales')
+ax1.plot(log_liquor,'b-')
+datelist=[]
+t=0
+for i in range(28):
+	t=1987+i
+	datelist=datelist+[t]
+	i+=1
+date_list =[str(x) for x in datelist]
+plt.xlim(0,360)
+plt.xticks(np.arange(4,360,13),date_list,rotation=90)  
+plt.title('Figure 4.7 Log Liquor Sales')
+plt.show()
+
+#Figure 4.8 Linear Trend Estimation
+import numpy as np
+import math
+import pandas
+from pandas import DataFrame, Series
+import statsmodels.formula.api as sm
+from statsmodels.tools.tools import add_constant
+from sklearn.linear_model import LinearRegression 
+import scipy, scipy.stats
+x=[]
+i=1
+for i in range(336):
+	x=x+[i+1]
+	i+=1
+y=log_liquor
+x_reg=add_constant(x,prepend=True)
+result=sm.OLS(y,x_reg).fit()
+result.model.data.xnames=['C','TIME']
+print(result.summary())
+
+#Figure 4.9 Residual Plot, Linear Trend Estimation
+from matplotlib.ticker import FixedLocator
+z=result.fittedvalues
+residual=y-z
+fit, ax1=plt.subplots(figsize=(20,8),dpi=80)
+ax1.set_xlabel('Time')
+ax1.set_ylim(-0.4,1.6)
+plt.yticks(np.arange(-0.4,0.8,0.2),['-0.4','-0.2','0','0.2','0.4','0.6'],rotation=90) 
+ax1.set_ylabel('residual')
+plt.axhline(y=0.15,linewidth=0.5, linestyle='--',color='black')
+plt.axhline(y=-0.15,linewidth=0.5, linestyle='--',color='black')
+ax1.plot(x,residual,'b-',label='Residual')
+plt.legend(loc='lower right')
+datelist=[]
+t=0
+for i in range(29):
+	t=1986+i
+	datelist=datelist+[t]
+	i+=1
+date_list =[str(w) for w in datelist]
+plt.xlim(0,350)
+plt.xticks(np.arange(0,350,12),date_list,rotation=90)  
+ax2=ax1.twinx()
+ax2.set_ylim(5,8) 
+ax2.set_ylabel('Log Sales')
+ax2.plot(x,z,'g-',label='Fitted')
+ax2.plot(x,y,'r-',label='Actual')
+plt.legend(loc='upper left')
+plt.title('Figure 4.9 Residual Plot, Linear Trend Estimation')
+plt.show()
+
+#Figure 4.10 Estimation Result, Linear Trend with Seasonal Dummies
+import matplotlib.pyplot as plt
+import numpy as np
+import math
+import pandas
+from pandas import DataFrame, Series
+import statsmodels.formula.api as sm
+from statsmodels.tools.tools import add_constant
+from sklearn.linear_model import LinearRegression 
+import scipy, scipy.stats
+RowNum=13
+ColumnNum=336
+SquareList=[[0 for a in range(ColumnNum)] for b in range(RowNum)]
+for j in range(12):
+	i=1
+	for i in range(336):
+		if i%12==j:
+			SquareList[j][i]=1
+		else:
+			SquareList[j][i]=0
+		i+=1
+	j+=1
+for i in range(336):
+	SquareList[12][i]=i+1
+	i+=1
+y=log_liquor
+x=np.transpose(SquareList)
+time=SquareList[12]
+result=sm.OLS(y,x).fit()
+result.model.data.xnames=['D1','D2','D3','D4','D5','D6','D7','D8','D9','D10','D11','D12','TIME']
+print(result.summary())
+
+#Figure 4.11: Residual Plot, Linear Trend with Seasonal Dummies
+z=result.fittedvalues
+residual=y-z
+fit, ax1=plt.subplots(figsize=(20,8),dpi=80)
+ax1.set_xlabel('Year')
+ax1.set_ylim(-0.15,0.35)
+plt.yticks(np.arange(-0.15,0.2,0.05),['-0.15','-0.1','-0.05','0','0.05','0.1','0.15']) 
+ax1.set_ylabel('residual')
+plt.axhline(y=0.12,linewidth=0.5, linestyle='--',color='black')
+plt.axhline(y=-0.12,linewidth=0.5, linestyle='--',color='black')
+ax1.plot(time,residual,'b-',label='Residual')
+plt.legend(loc='lower right')
+datelist=[]
+t=0
+for i in range(29):
+	t=1986+i
+	datelist=datelist+[t]
+	i+=1
+date_list =[str(w) for w in datelist]
+plt.xlim(0,350)
+plt.xticks(np.arange(0,350,12),date_list,rotation=90)  
+ax2=ax1.twinx()
+ax2.set_ylim(5,8) 
+ax2.set_ylabel('Log Liquor Sales')
+ax2.plot(time,z,'g-',label='Fitted')
+ax2.plot(time,y,'r-',label='Actual')
+plt.legend(loc='upper left')
+plt.title('Figure 4.11: Residual Plot, Linear Trend with Seasonal Dummies')
+plt.show()
+
+#Figure 4.12 Seasonal Pattern
+coef=result.params
+factor=coef[0:12]
+seq=[]
+for i in range(12):
+	seq.append(i+1)
+	i+=1
+fit, ax1=plt.subplots(figsize=(20,8),dpi=80)
+ax1.set_xlabel('Month')
+ax1.set_ylabel('Factor')
+ax1.set_xlim(0,13)
+ax1.set_ylim(6.3,6.9)
+plt.xticks(np.arange(1,13),['M1','M2','M3','M4','M5','M6','M7','M8','M9','M10','M11','M12'])  
+ax1.plot(seq,factor,'b-')
+plt.title('Figure 4.12 Seasonal Pattern')
+plt.show()
+
+#Figure 5.7: Log-Quadratic Trend Estimation
+import matplotlib.pyplot as plt
+import numpy as np
+import math
+import pandas
+from pandas import DataFrame, Series
+import statsmodels.formula.api as sm
+from statsmodels.tools.tools import add_constant
+from sklearn.linear_model import LinearRegression 
+import scipy, scipy.stats
+RowNum=3
+ColumnNum=336
+SquareList=[[0 for a in range(ColumnNum)] for b in range(RowNum)]
+for i in range(336):
+	SquareList[0][i]=1
+	SquareList[1][i]=i+1
+	SquareList[2][i]=(i+1)**2
+	i+=1
+y=log_liquor
+x=np.transpose(SquareList)
+time=SquareList[1]
+result=sm.OLS(y,x).fit()
+result.model.data.xnames=['C','TIME','TIME2']
+print(result.summary())
+
+#Figure 5.8: Residual Plot, Log-Quadratic Trend Estimation
+z=result.fittedvalues
+residual=y-z
+fit, ax1=plt.subplots(figsize=(20,8),dpi=80)
+ax1.set_xlabel('Year')
+datelist=[]
+t=0
+for i in range(29):
+	t=1986+i
+	datelist=datelist+[t]
+	i+=1
+date_list =[str(w) for w in datelist]
+plt.xlim(0,350)
+plt.xticks(np.arange(0,350,12),date_list,rotation=90)
+ax1.set_ylim(-0.4,1.6)
+ax1.set_ylabel('residual')  
+plt.axhline(y=0.12,linewidth=0.5, linestyle='--',color='black')
+plt.axhline(y=-0.12,linewidth=0.5, linestyle='--',color='black')
+ax1.plot(time,residual,'b-',label='Residual')
+plt.legend(loc='lower right')
+ax2=ax1.twinx()
+ax2.set_ylim(4,8)
+ax2.set_ylabel('Log Liquor Sales')
+ax2.plot(time,z,'g-',label='Fitted')
+ax2.plot(time,y,'r-',label='Actual')
+plt.legend(loc='upper left')
+plt.title('Figure 5.8: Residual Plot, Log-Quadratic Trend Estimation')
+plt.show()
+
+
+#Figure 5.9: Liquor Sales Log-Quadratic Trend Estimation with Seasonal Dummies
+import matplotlib.pyplot as plt
+import numpy as np
+import math
+import pandas
+from pandas import DataFrame, Series
+import statsmodels.formula.api as sm
+from statsmodels.tools.tools import add_constant
+from sklearn.linear_model import LinearRegression 
+import scipy, scipy.stats
+RowNum=14
+ColumnNum=336
+SquareList=[[0 for a in range(ColumnNum)] for b in range(RowNum)]
+for j in range(12):
+	i=1
+	for i in range(336):
+		if i%12==j:
+			SquareList[j][i]=1
+		else:
+			SquareList[j][i]=0
+		i+=1
+	j+=1
+for i in range(336):
+	SquareList[12][i]=i+1
+	SquareList[13][i]=(i+1)**2
+	i+=1
+y=log_liquor
+x=np.transpose(SquareList)
+time=SquareList[12]
+t_sqr=SquareList[13]
+result=sm.OLS(y,x).fit()
+result.model.data.xnames=['D1','D2','D3','D4','D5','D6','D7','D8','D9','D10','D11','D12','TIME','TIME2']
+print(result.summary())
+
+#Figure 5.10: Residual Plot, Liquor Sales Log-Quadratic Trend Estimation With Seasonal Dummies
+z=result.fittedvalues
+residual=y-z
+fit, ax1=plt.subplots(figsize=(20,8),dpi=80)
+ax1.set_xlabel('Year')
+ax1.set_ylim(-0.15,0.35)
+plt.yticks(np.arange(-0.15,0.2,0.05),['-0.15','-0.1','-0.05','0','0.05','0.1','0.15']) 
+ax1.set_ylabel('residual')
+plt.axhline(y=0.048,linewidth=0.5, linestyle='--',color='black')
+plt.axhline(y=-0.048,linewidth=0.5, linestyle='--',color='black')
+ax1.plot(time,residual,'b-',label='Residual')
+plt.legend(loc='lower right')
+datelist=[]
+t=0
+for i in range(29):
+	t=1986+i
+	datelist=datelist+[t]
+	i+=1
+date_list =[str(w) for w in datelist]
+plt.xlim(0,350)
+plt.xticks(np.arange(0,350,12),date_list,rotation=90)  
+ax2=ax1.twinx()
+ax2.set_ylim(5,8) 
+ax2.set_ylabel('Log Liquor Sales')
+ax2.plot(time,z,'g-',label='Fitted')
+ax2.plot(time,y,'r-',label='Actual')
+plt.legend(loc='upper left')
+plt.title('Figure 5.10: Residual Plot, Liquor Sales Log-Quadratic Trend Estimation With Seasonal Dummies')
+plt.show()
+
+#Chapter 11 p.176 Graphical Diagnostics - Scatterplot of e(t) against e(t-1)
+RESIDL1=[]
+for i in range(len(residual)-1):
+	RESIDL1.append(residual[i])
+	i+=1
+RESID=[]
+for i in range(1,len(residual)):
+	RESID.append(residual[i])
+	i+=1
+fit, ax1=plt.subplots(figsize=(8,8),dpi=80)
+ax1.set_xlabel('RESIDL1')
+ax1.set_ylabel('RESID') 
+ax1.plot(RESIDL1,RESID,'bo')
+plt.title('Graphical Diagnostics - Scatterplot of e(t) against e(t-1)')
+plt.show()
+
+#Chapter 11 p.178 BG Test RESIDL1
+import matplotlib.pyplot as plt
+import numpy as np
+import math
+import pandas
+from pandas import DataFrame, Series
+import statsmodels.formula.api as sm
+from statsmodels.tools.tools import add_constant
+from sklearn.linear_model import LinearRegression 
+import scipy, scipy.stats
+RowNum=14
+ColumnNum=336
+SquareList=[[0 for a in range(ColumnNum)] for b in range(RowNum)]
+for j in range(12):
+	i=1
+	for i in range(336):
+		if i%12==j:
+			SquareList[j][i]=1
+		else:
+			SquareList[j][i]=0
+		i+=1
+	j+=1
+for i in range(336):
+	SquareList[12][i]=i+1
+	SquareList[13][i]=(i+1)**2
+	i+=1
+y=log_liquor
+x=np.transpose(SquareList)
+t=SquareList[12]
+t_sqr=SquareList[13]
+result=sm.OLS(y,x).fit()
+z=result.fittedvalues
+residual=y-z
+RESIDL1=[]
+for i in range(len(residual)-1):
+	RESIDL1.append(residual[i])
+	i+=1
+RESID=residual
+RowNum=15
+ColumnNum=336
+SquareList_test=[[0 for a in range(ColumnNum)] for b in range(RowNum)]
+for j in range(14):
+	for i in range(336):
+		SquareList_test[j][i]=SquareList[j][i]
+		i+=1
+	j+=1
+for i in range(1,336):
+	SquareList_test[14][i]=RESIDL1[i-1]
+	i+=1
+SquareList_test[14][0]=0
+x_test=np.transpose(SquareList_test)
+y=RESID
+result=sm.OLS(y,x_test).fit()
+result.model.data.ynames=RESID
+result.model.data.xnames=['D1','D2','D3','D4','D5','D6','D7','D8','D9','D10','D11','D12','TIME','TIME2','RESIDL1']
+print(result.summary())
+
+#Chapter 11 p.179 BG Test RESIDL1-4
+import matplotlib.pyplot as plt
+import numpy as np
+import math
+import pandas
+from pandas import DataFrame, Series
+import statsmodels.formula.api as sm
+from statsmodels.tools.tools import add_constant
+from sklearn.linear_model import LinearRegression 
+import scipy, scipy.stats
+RowNum=14
+ColumnNum=336
+SquareList=[[0 for a in range(ColumnNum)] for b in range(RowNum)]
+for j in range(12):
+	i=1
+	for i in range(336):
+		if i%12==j:
+			SquareList[j][i]=1
+		else:
+			SquareList[j][i]=0
+		i+=1
+	j+=1
+for i in range(336):
+	SquareList[12][i]=i+1
+	SquareList[13][i]=(i+1)**2
+	i+=1
+y=log_liquor
+x=np.transpose(SquareList)
+t=SquareList[12]
+t_sqr=SquareList[13]
+result=sm.OLS(y,x).fit()
+z=result.fittedvalues
+residual=y-z
+RESIDL1=[]
+for i in range(len(residual)-1):
+	RESIDL1.append(residual[i])
+	i+=1
+RESIDL2=[]
+for i in range(len(residual)-2):
+	RESIDL2.append(residual[i])
+	i+=1
+RESIDL3=[]
+for i in range(len(residual)-3):
+	RESIDL1.append(residual[i])
+	i+=1
+RESIDL4=[]
+for i in range(len(residual)-4):
+	RESIDL1.append(residual[i])
+	i+=1
+RESID=residual
+RowNum=18
+ColumnNum=336
+SquareList_test=[[0 for a in range(ColumnNum)] for b in range(RowNum)]
+for j in range(14):
+	for i in range(336):
+		SquareList_test[j][i]=SquareList[j][i]
+		i+=1
+	j+=1
+for j in range(14,18,1):
+	for i in range(j-13,336,1):
+		SquareList_test[j][i]=RESIDL1[i-j+13]
+		SquareList_test[j][j-14]=0
+		i+=1
+	j+=1
+x_test=np.transpose(SquareList_test)
+y=RESID
+result=sm.OLS(y,x_test).fit()
+result.model.data.ynames=RESID
+result.model.data.xnames=['D1','D2','D3','D4','D5','D6','D7','D8','D9','D10',\
+'D11','D12','TIME','TIME2','RESIDL1','RESIDL2','RESIDL3','RESIDL4']
+print(result.summary())
+
+#Chapter 11 p.179 BG Test RESIDL1-8
+import matplotlib.pyplot as plt
+import numpy as np
+import math
+import pandas
+from pandas import DataFrame, Series
+import statsmodels.formula.api as sm
+from statsmodels.tools.tools import add_constant
+from sklearn.linear_model import LinearRegression 
+import scipy, scipy.stats
+RowNum=14
+ColumnNum=336
+SquareList=[[0 for a in range(ColumnNum)] for b in range(RowNum)]
+for j in range(12):
+	i=1
+	for i in range(336):
+		if i%12==j:
+			SquareList[j][i]=1
+		else:
+			SquareList[j][i]=0
+		i+=1
+	j+=1
+for i in range(336):
+	SquareList[12][i]=i+1
+	SquareList[13][i]=(i+1)**2
+	i+=1
+y=log_liquor
+x=np.transpose(SquareList)
+t=SquareList[12]
+t_sqr=SquareList[13]
+result=sm.OLS(y,x).fit()
+z=result.fittedvalues
+residual=y-z
+RESIDL1=[]
+for i in range(len(residual)-1):
+	RESIDL1.append(residual[i])
+	i+=1
+RESID=residual
+RowNum=22
+ColumnNum=336
+SquareList_test=[[0 for a in range(ColumnNum)] for b in range(RowNum)]
+for j in range(14):
+	for i in range(336):
+		SquareList_test[j][i]=SquareList[j][i]
+		i+=1
+	j+=1
+for j in range(14,22,1):
+	for i in range(j-13,336,1):
+		SquareList_test[j][i]=RESIDL1[i-j+13]
+		SquareList_test[j][j-14]=0
+		i+=1
+	j+=1
+x_test=np.transpose(SquareList_test)
+y=RESID
+result=sm.OLS(y,x_test).fit()
+result.model.data.ynames=RESID
+result.model.data.xnames=['D1','D2','D3','D4','D5','D6','D7','D8','D9','D10',\
+'D11','D12','TIME','TIME2','RESIDL1','RESIDL2','RESIDL3','RESIDL4',\
+'RESIDL5','RESIDL6','RESIDL7','RESIDL8']
+print(result.summary())
+
+#Chapter 11 p.181 ACF PAF with BG Test RESIDL1-8
+#ACF
+import statsmodels.tsa as tsa
+acf=tsa.stattools.acf(RESID,nlags=24)
+fig = plt.figure(1)
+ax1 = plt.subplot(121)
+ax1.barh(np.arange(24), acf[1:])
+pos=[]
+for i in range(24):
+	pos.append(i+1)
+	i+=1
+plt.yticks(np.arange(24),pos)
+plt.gca().invert_yaxis()
+plt.title('BG Test RESIDL1-8 ACF')
+#PACF
+pacf=tsa.stattools.pacf(RESID,nlags=24)
+ax2 = plt.subplot(122)
+ax2.barh(np.arange(24), acf[1:])
+pos=[]
+for i in range(24):
+	pos.append(i+1)
+	i+=1
+plt.yticks(np.arange(24),pos)
+plt.gca().invert_yaxis()
+plt.title('BG Test RESIDL1-8 PACF')
+plt.show()
+
+#Figure 11.1 Estimation of Trend+Seasonal Model with AR(4) Disturbances
+#Note: we get slightly different coefficient estimates for dummy variables probably due to different observation adjustment and coefficient estimation method
+import matplotlib.pyplot as plt
+import numpy as np
+import math
+import pandas
+from pandas import DataFrame, Series
+import statsmodels.formula.api as sm
+from statsmodels.tools.tools import add_constant
+from sklearn.linear_model import LinearRegression 
+import scipy, scipy.stats
+RowNum=14
+ColumnNum=336
+SquareList=[[0 for a in range(ColumnNum)] for b in range(RowNum)]
+for j in range(12):
+	i=1
+	for i in range(336):
+		if i%12==j:
+			SquareList[j][i]=1
+		else:
+			SquareList[j][i]=0
+		i+=1
+	j+=1
+for i in range(336):
+	SquareList[12][i]=i+1
+	SquareList[13][i]=(i+1)**2
+	i+=1
+y=log_liquor
+y_test=log_liquor[4:]
+x=np.transpose(SquareList)
+result1=sm.OLS(y,x).fit()
+z1=result1.fittedvalues
+residual=y-z1
+t_short=SquareList[12][4:]
+t_sqr_short=SquareList[13][4:]
+RowNum=18
+ColumnNum=332
+SquareList_test=[[0 for a in range(ColumnNum)] for b in range(RowNum)]
+for j in range(14):
+	for i in range(0,332):
+		SquareList_test[j][i]=SquareList[j][i+4]
+		i+=1
+	j+=1
+for j in range(14,18):
+	for i in range(0,332):
+		SquareList_test[j][i]=residual[i-j+17]
+		i+=1
+x_test=np.transpose(SquareList_test)
+result=sm.OLS(y_test,x_test).fit()
+result.model.data.xnames=['D1','D2','D3','D4','D5','D6','D7','D8','D9','D10',\
+'D11','D12','TIME','TIME2','AR(1)','AR(2)','AR(3)','AR(4)']
+print(result.summary())
+
+#Figure 11.2 Residual Plot_Trend+Seasonal Model with AR(4) Disturbances
+z=result.fittedvalues
+residual=y_test-z
+fit, ax1=plt.subplots(figsize=(20,8),dpi=80)
+ax1.set_xlabel('Year')
+ax1.set_ylim(-0.12,0.28)
+plt.yticks(np.arange(-0.12,0.12,0.04),['-0.12','-0.08','-0.04','0','0.04','0.08','0.12']) 
+ax1.set_ylabel('residual')
+plt.axhline(y=0.032,linewidth=0.5, linestyle='--',color='black')
+plt.axhline(y=-0.032,linewidth=0.5, linestyle='--',color='black')
+ax1.plot(t_short,residual,'b-',label='Residual')
+plt.legend(loc='lower right')
+datelist=[]
+t=0
+for i in range(29):
+	t=1986+i
+	datelist=datelist+[t]
+	i+=1
+date_list =[str(w) for w in datelist]
+plt.xlim(0,350)
+plt.xticks(np.arange(0,350,12),date_list,rotation=90)  
+ax2=ax1.twinx()
+ax2.set_ylim(3,8) 
+ax2.set_ylabel('Log Liquor Sales')
+ax2.plot(t_short,z,'g-',label='Fitted')
+ax2.plot(t_short,y_test,'r-',label='Actual')
+plt.legend(loc='upper left')
+plt.title('Figure 11.2 Residual Plot_Trend+Seasonal Model with AR(4) Disturbances')
+plt.show()
+
+#Figure 11.3 Residual Correlogram_Trend+Seasonal Model with AR(4) Disturbances
+import statsmodels.tsa as tsa
+acf=tsa.stattools.acf(residual,nlags=24)
+fig = plt.figure(1)
+ax1 = plt.subplot(121)
+ax1.barh(np.arange(24), acf[1:])
+pos=[]
+for i in range(24):
+	pos.append(i+1)
+	i+=1
+plt.yticks(np.arange(24),pos)
+plt.xticks(rotation=90)
+plt.gca().invert_yaxis()
+plt.title('Figure 11.3 ACF')
+#PACF
+pacf=tsa.stattools.pacf(residual,nlags=24)
+ax2 = plt.subplot(122)
+ax2.barh(np.arange(24), acf[1:])
+pos=[]
+for i in range(24):
+	pos.append(i+1)
+	i+=1
+plt.yticks(np.arange(24),pos)
+plt.xticks(rotation=90)
+plt.gca().invert_yaxis()
+plt.title('Figure 11.3 PACF')
+plt.show()

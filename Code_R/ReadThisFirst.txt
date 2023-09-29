@@ -1,0 +1,33 @@
+Updated 8 August 2014
+
+Copyright 2013 onward, by Francis X. Diebold.
+
+This work is licensed under the Creative Commons
+Attribution-NonCommercial-NoDerivatives 4.0 International
+License. (Briey: I retain copyright, but you can use, copy and
+distribute non-commercially, so long as you give me attribution
+and do not modify.) To view a copy of the license, visit
+http://creativecommons.org/licenses/by-nc-nd/4.0.
+
+Notes on running the R code.
+
+(1) 	The R code in this book uses a number of user-written R packages that are not included in the default R installation. They need to be installed separately. To install these packages, copy the following code and paste it into your R console: 
+
+packages <- c("datasets", "graphics", "utils", "stats", "methods", "grDevices", "zoo", "timeDate", "timeSeries", "fBasics", "forecast", "plotrix", "lmtest", "sandwich", "MSBVAR", "car", "ggplot2", "tseries", "fGarch", "moments")
+
+for (i in 1:length(packages)) {
+  install.packages(packages[i])
+  library(packages[i], character.only=TRUE)
+}
+
+Once you enter the code as above, you may be asked to select a CRAN mirror from which to download the packages. Simply select the mirror closest to you.
+
+
+(2) 	In addition, you will need to ensure that your current working directory is specified correctly; otherwise your computer will not know where the data files are located. To do so, simply copy the path name of the location where you store the DataAndCode folder, and add the directory path as an argument to the command setwd(). 
+
+For example:
+
+setwd(C:/users/ABC/Econometrics/DataAndCode)		for Windows computers
+
+setwd(/Users/ABC/Econometrics/DataAndCode)		for Mac computers
+

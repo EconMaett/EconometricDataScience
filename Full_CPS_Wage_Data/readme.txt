@@ -1,0 +1,1 @@
+The dataset included in the R_Wage folder is 1995.
